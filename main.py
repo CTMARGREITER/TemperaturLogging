@@ -1,2 +1,2 @@
-print("Hello World!")
+print("wir sind die drei Muskeltiere")
 
