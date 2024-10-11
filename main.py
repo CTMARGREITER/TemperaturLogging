@@ -18,16 +18,33 @@ def read_temperature_from_device(ser : serial.Serial) -> float:
 if __name__ == "__main__":
 
     # Open the serial port and connect to device COM11 with the given parameters
-    ser = serial.Serial("COM11", baudrate=1200, bytesize=serial.SEVENBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=0.5)
-    csv_file = open("data/temp_data.csv", "a")
+    com_ports = ["COM11", "COM12", "COM13", "COM14"]
+    serial_devices = []
+
+    for com_port in com_ports:
+        ser = serial.Serial(com_port,
+                            baudrate=1200,
+                            bytesize=serial.SEVENBITS,
+                            parity=serial.PARITY_NONE,
+                            stopbits=serial.STOPBITS_ONE,
+                            timeout=1.0)
+        serial_devices.append(ser)
+    
+    csv_file = open("./data/temp_data.csv", "a")
 
     while True:
-        temperature = read_temperature_from_device(ser)
 
-        # Print the temperature value
-        if temperature is not None:
-            csv_file.write(f"{temperature}\n")
-            print(temperature)
+        temperatures = []
+        for ser in serial_devices:
+            temperature = read_temperature_from_device(ser)
+            temperatures.append(temperature)
 
+        if not None in temperatures:
+            csv_file.write("; ".join(map(str, temperatures)) + "\n")
+            print(temperatures)
+        else:
+            print(f"Error reading data for one of the devices: {temperatures}")
+           
     csv_file.close()
-    ser.close()
+    for ser in serial_devices:
+        ser.close()
